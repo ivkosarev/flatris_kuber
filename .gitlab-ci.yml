@@ -1,0 +1,32 @@
+image: docker
+
+stages:
+  - build
+  - test
+  
+
+services:
+- docker:dind
+
+before_script:
+- export
+- docker login --username $CI_REGISTRY_USER --password $CI_REGISTRY_PASSWORD $CI_REGISTRY
+
+build:
+ stage: build
+ script:
+ - docker pull registry.gitlab.com/ivkosarev1/skillbox1:latest
+ - docker build --cache-from registry.gitlab.com/ivkosarev1/skillbox1:latest --tag registry.gitlab.com/ivkosarev1/skillbox1 --tag registry.gitlab.com/ivkosarev1/skillbox1:$CI_COMMIT_SHORT_SHA .
+ - docker push registry.gitlab.com/ivkosarev1/skillbox1:$CI_COMMIT_SHORT_SHA
+ - echo "building"
+ - mkdir build
+ - touch build/info.txt
+ artifacts:
+  paths:
+   - build/
+
+test:
+ stage: test
+ script:
+  - echo "Testing"
+  - test -f "build/info.txt" # зачем изобретать велосипед
